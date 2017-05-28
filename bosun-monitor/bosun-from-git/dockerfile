@@ -1,0 +1,49 @@
+# Dockerfile to build bosun container image from a git repo
+
+#Uses latest official golang version 1.x image. See https://hub.docker.com/_/golang/
+FROM golang:1
+
+RUN apt-get update && apt-get install -y \
+	nano \
+	vim \
+	less \
+	wget \
+    htop \
+	--no-install-recommends \
+	&& rm -rf /var/lib/apt/lists/*
+
+ENV GITREPO git://github.com/bosun-monitor/bosun.git
+ENV GITBRANCH master
+ENV BOSUNPATH /go/src/bosun.org
+ENV TERM=xterm
+WORKDIR $BOSUNPATH
+
+#sample files in data folder if things aren't overriden
+RUN mkdir -p /data
+COPY bosun.toml /data/
+COPY bosunrules.conf /data/
+COPY startup.sh /data/
+
+EXPOSE 8070 9565
+VOLUME ["/data", "/go/src/"] #https://docs.docker.com/engine/tutorials/dockervolumes/
+
+ENTRYPOINT ["/data/startup.sh"]
+CMD [] #default arguments passed to ENTRYPOINT. Can override: docker run bosun-git testing 1 2 3
+
+#docker build -t bosun-git bosun-from-git
+#docker run --name bosun-test bosun-git
+
+#TODO: figure out logging. Why does everything dump out to the console? Don't think that is normal when omitting -it on run. Works as expected using -d
+#GIT run options: -e GITBRANCH='qflux' -e GITREPO='git@myserver.com/bosun.git' (how to do auth? attach .ssh volume for keys?)
+#Mount local go files with src/bosun.org: -v /home/gbray/go/src:/go/src
+#Mount data folder from host to maintine bosun/ledis/config state between upgrades: -v /home/gbray/containerdata/bosun:/data
+
+#Setup bosun container to use opentsdb:4242 container for time series (See bosun.toml for DNS/container names)
+#docker network create --driver bridge monitoring; docker network connect monitoring current_container_name
+#docker run --name opentsdb --restart=always -d -p 4242:4242 -p 5252:5252 -p 8070:8070 -p 16010:16010 stackexchange/bosun:0.6.0-pre
+#docker run -d --name bosun --network=monitoring -p 8080:8070 -v /home/gbray/go/src:/go/src bosun-git
+
+#TODO: add compose file for bosun+opentsdb+influxdb+grafana
+#TODO: add scripts to update bosun source without deleting container?
+
+
