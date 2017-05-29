@@ -1,0 +1,38 @@
+# Dockerfile to build tsdbrelay container image from a git repo
+
+#Uses latest official golang version 1.x image. See https://hub.docker.com/_/golang/
+FROM golang:1
+
+RUN apt-get update && apt-get install -y \
+	nano \
+	vim \
+	less \
+	wget \
+    htop \
+	--no-install-recommends \
+	&& rm -rf /var/lib/apt/lists/*
+
+ENV GITREPO git://github.com/bosun-monitor/bosun.git
+ENV GITBRANCH master
+ENV BOSUNPATH /go/src/bosun.org
+ENV TSDBRELAY_OPTS -b bosun:8070 -t opentsdb:4242 -l 0.0.0.0:5252 -redis bosun:9565
+ENV TERM="xterm"
+WORKDIR $BOSUNPATH
+
+#RUN mkdir -p /scripts #TODO: move shared setup scripts to a /scripts volume in a base image
+COPY startup.sh /startup.sh
+
+EXPOSE 5252
+VOLUME ["/go/src/"] #https://docs.docker.com/engine/tutorials/dockervolumes/
+
+ENTRYPOINT ["/startup.sh"]
+CMD [] #default arguments passed to ENTRYPOINT. Can override: docker run tsdbrelay-from-git testing 1 2 3
+
+#docker build -t tsdbrelay-from-git tsdbrelay-from-git
+#docker run --name tsdbrelay --network=monitoring -p 5252:5252 tsdbrelay-from-git
+
+#GIT run options: -e GITBRANCH='feature' -e GITREPO='git@myserver.com/bosun.git'
+#Mount local go files with src/bosun.org: -v /home/gbray/go/src:/go/src
+
+#Override default relay options. Note: use container names as DNS hostname and internal port numbers (not exposed/remapped port)
+#TSDBRELAY_OPTS='-b bosun:8070 -t opentsdb:4242 -l 0.0.0.0:5252 -r opentsdb:8070#bosun-index,myinfluxdb:4242#data-only -redis bosun:9565'
