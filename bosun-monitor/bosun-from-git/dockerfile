@@ -30,20 +30,18 @@ VOLUME ["/data", "/go/src/"] #https://docs.docker.com/engine/tutorials/dockervol
 ENTRYPOINT ["/data/startup.sh"]
 CMD [] #default arguments passed to ENTRYPOINT. Can override: docker run bosun-git testing 1 2 3
 
-#docker build -t bosun-git bosun-from-git
-#docker run --name bosun-test bosun-git
+#docker build -t bosun-from-git bosun-from-git
+#docker run --name bosun bosun-from-git
 
-#TODO: figure out logging. Why does everything dump out to the console? Don't think that is normal when omitting -it on run. Works as expected using -d
 #GIT run options: -e GITBRANCH='qflux' -e GITREPO='git@myserver.com/bosun.git' (how to do auth? attach .ssh volume for keys?)
 #Mount local go files with src/bosun.org: -v /home/gbray/go/src:/go/src
-#Mount data folder from host to maintine bosun/ledis/config state between upgrades: -v /home/gbray/containerdata/bosun:/data
+#Mount data folder from host to maintaine bosun/ledis/config state between upgrades: -v /home/gbray/containerdata/bosun:/data
 
-#Setup bosun container to use opentsdb:4242 container for time series (See bosun.toml for DNS/container names)
+#Setup bosun container to use opentsdb:4242 container for time series (See bosun.toml for expected DNS/container names)
 #docker network create --driver bridge monitoring; docker network connect monitoring current_container_name
-#docker run --name opentsdb --restart=always -d -p 4242:4242 -p 5252:5252 -p 8070:8070 -p 16010:16010 stackexchange/bosun:0.6.0-pre
-#docker run -d --name bosun --network=monitoring -p 8080:8070 -v /home/gbray/go/src:/go/src bosun-git
+#docker run -d --name opentsdb --network=monitoring --restart=always -p 4242:4242 -p 8080:8070 -p 16010:16010 stackexchange/bosun:0.6.0-pre
+#docker run -d --name bosun --network=monitoring -p 8070:8070 bosun-from-git
+#docker run -d --name tsdbrelay --network=monitoring -p 5252:5252 tsdbrelay-from-git
 
 #TODO: add compose file for bosun+opentsdb+influxdb+grafana
 #TODO: add scripts to update bosun source without deleting container?
-
-

@@ -23,18 +23,24 @@ trap _term SIGTERM #TODO: add other signals that are sent by docker kill command
 #echo "startup args: ${@}"
 #TODO: change startup script based on arguments passed in: docker run bosun-git testing 1 2 3
 
+gitshortlog(){
+    git log --pretty=format:"%H authored %ar: %s" -1
+}
+
 #clone bosun-monitor repo
 if [[ -f $BOSUNPATH/cmd/bosun/main.go ]]
 then
     echo ''
-    echo -e "Skipping git clone as $BOSUNPATH already has: \n$(git log --pretty=format:"%H authored %ar: %s" -1)"
+    echo "Skipping git clone as $BOSUNPATH already has:"
+    gitshortlog
 else
     echo ''
     echo 'cloning bosun-monitor repository'
     echo "from $GITREPO $GITBRANCH"
     git clone --single-branch --branch $GITBRANCH --depth 1 $GITREPO $BOSUNPATH
     echo ''
-    echo -e "finished cloning:\n$($(git log --pretty=format:\"%H authored %ar: %s\" -1))"
+    echo 'finished cloning:'
+    gitshortlog
 fi
 
 #run bosun in background
