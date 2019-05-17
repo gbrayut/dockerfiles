@@ -1,0 +1,17 @@
+  version: '3'
+  services:
+    homeassistant:
+      container_name: home-assistant
+      image: homeassistant/home-assistant:0.91.4
+      ports:
+        - "8123:8123/tcp"
+      devices:
+        - /dev/ttyACM0
+      volumes:
+        - /data/homeassistant:/config
+        - /data/ssl:/ssl
+        - /etc/localtime:/etc/localtime:ro
+      dns:
+        - 192.168.0.1 
+      restart: always
+      network_mode: host
