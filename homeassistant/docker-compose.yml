@@ -1,10 +1,10 @@
-  version: '3'
+  version: '3.7'
   services:
     homeassistant:
       container_name: home-assistant
-      image: homeassistant/home-assistant:0.91.4
+      image: homeassistant/home-assistant:0.102.1
       ports:
-        - "8123:8123/tcp"
+        - "8123"
       devices:
         - /dev/ttyACM0
       volumes:
