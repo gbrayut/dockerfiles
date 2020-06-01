@@ -2,7 +2,7 @@
   services:
     homeassistant:
       container_name: home-assistant
-      image: homeassistant/home-assistant:0.102.1
+      image: homeassistant/home-assistant:stable
       ports:
         - "8123"
       devices:
@@ -15,3 +15,17 @@
         - 192.168.0.1 
       restart: always
       network_mode: host
+    mqtt:
+      container_name: mqtt
+      image: toke/mosquitto
+      ports:
+        - "1883"
+      volumes:
+        - /data/mqtt/config:/mqtt/config
+        - /data/mqtt/data:/mqtt/data
+        - /data/mqtt/log:/mqtt/log
+      dns:
+        - 192.168.0.1
+      restart: always
+      network_mode: host
+
